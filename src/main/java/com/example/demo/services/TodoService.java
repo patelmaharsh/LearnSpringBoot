@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.demo.customException.BusinessException;
 import com.example.demo.model.Todo;
 import com.example.demo.repositories.TodoRepository;
 
@@ -45,9 +46,20 @@ public class TodoService {
 	}
 
 	public Todo saveTodo(Todo todo) {
-		todo.setId(getMaxId() + 1);
-		Todo todoNew = todoRepo.save(todo);
-		return todoNew;
+		
+		if(todo.getUserId()==0) {
+			throw new BusinessException("601", "Please send userId associated");
+		} else if(todo.getTitle()==null || todo.getTitle().length()==0) {
+			throw new BusinessException("601", "Please send title associated");
+		}
+		try {
+			todo.setId(getMaxId() + 1);
+			Todo todoNew = todoRepo.save(todo);
+			return todoNew;
+		} catch(Exception e) {
+			throw new BusinessException("602", "Something went wrong in servic layer. "+e.getMessage());
+		}
+		
 	}
 
 	public Todo updateTodo(Todo todo, int id) {

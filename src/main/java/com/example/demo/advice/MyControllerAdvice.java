@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.example.demo.customException.BusinessException;
+import com.example.demo.customException.ControllerException;
+
 @ControllerAdvice
 public class MyControllerAdvice {
-
+	
 	@ExceptionHandler({EmptyResultDataAccessException.class,NoSuchElementException.class})
 	public ResponseEntity<String> handleEmptyResultDataAccessException(Exception emptyResultException) {
 		return new ResponseEntity<String>("No value is present in DB. Please change your request", HttpStatus.NOT_FOUND);

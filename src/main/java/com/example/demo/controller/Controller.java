@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.customException.BusinessException;
+import com.example.demo.customException.ControllerException;
 import com.example.demo.model.Todo;
 import com.example.demo.repositories.TodoRepository;
 import com.example.demo.services.TodoService;
@@ -39,12 +41,6 @@ public class Controller {
 	@GetMapping("/todos")
 	public ResponseEntity<List<Todo>> getAllTodos() {
 		List<Todo> todos = todoService.getAllTodos();
-		// Saving todos fetched from JsonPlaceholder API
-		/*
-		 * for(Todo todo: todos) { 
-		 * todoRepo.save(todo); 
-		 * }
-		 */
 		logger.trace("Todo list fetched!");
 		return new ResponseEntity<>(todos, HttpStatus.OK);
 	}
@@ -62,9 +58,18 @@ public class Controller {
 	}
 	
 	@PostMapping("/todos")
-	public ResponseEntity<Todo> postTodo(@RequestBody Todo todo){
-		Todo todoNew = todoService.saveTodo(todo);
-		return new ResponseEntity<>(todoNew,HttpStatus.CREATED);
+	public ResponseEntity<?> postTodo(@RequestBody Todo todo){
+		try {
+			Todo todoNew = todoService.saveTodo(todo);
+			return new ResponseEntity<Todo>(todoNew,HttpStatus.CREATED);
+		} catch(BusinessException e) {
+			ControllerException ce = new ControllerException(e.getErrorCode(),e.getErrorMessage());
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		} catch(Exception e) {
+			ControllerException ce = new ControllerException("612","Something went wrong in controller");
+			return new ResponseEntity<ControllerException>(ce, HttpStatus.BAD_REQUEST);
+		}
+		
 	}
 	
 	@PutMapping("/todos/{id}")
@@ -76,6 +81,6 @@ public class Controller {
 	@DeleteMapping("/todos/{id}")
 	public ResponseEntity<?> deleteTodo( @PathVariable int id){
 		todoService.deleteTodo(id);
-		return new ResponseEntity<>(HttpStatus.OK);
+		return new ResponseEntity<>("Todo Deleted",HttpStatus.OK);
 	}
 }
